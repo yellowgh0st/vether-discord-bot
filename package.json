@@ -1,7 +1,7 @@
 {
   "name": "price-bot",
   "version": "1.0.0",
-  "description": "A bot that fetches current Vethe price",
+  "description": "A bot that fetches current Vether price",
   "main": "app.js",
   "scripts": {
     "start": "node app.js"
@@ -11,6 +11,6 @@
   "dependencies": {
     "discord.js": "^12.2.0",
     "eslint": "^7.1.0",
-    "node-fetch": "^2.6.0"
+    "web3": "^1.2.9"
   }
 }
