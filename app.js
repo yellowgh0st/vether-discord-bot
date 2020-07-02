@@ -8,7 +8,7 @@ const botLoginKey = process.env.BOT_LOGIN_KEY
 const infuraAPI = 'https://mainnet.infura.io/v3/'
     + process.env.INFURA_API_KEY
 
-const poolVethEth = '0x03e008804c5bf70e20b5a0b7233cf2687ccd2a96'
+const poolVethEth = '0x3696fa5ad6e5c74fdcbced9af74379d94c4b775a'
 const poolDaiEth = '0xa478c2975ab1ea89e8196811f51a7b7ade33eb11'
 const poolUsdcEth = '0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc'
 
@@ -24,7 +24,7 @@ async function getPrice(pair, swap) {
       }
   }
   catch (e) {
-      console.log(e);
+      console.log(e)
   }
 }
 
@@ -56,16 +56,20 @@ async function sendPriceToChannel(message) {
           priceVethUsdc = Number(priceVethUsdc).toFixed(2)
       console.log(priceVethUsdc)
 
+      // announceMessage = `
+      //    <:uniswap:718587420274196553> Uniswap V2 **$VETH** price is at *USDC* **${priceVethUsdc}**, *DAI* **${priceVethDai}**, *Ξ* **${priceVethEth}**
+      //  `
+
       announceMessage = `
-         <:uniswap:718587420274196553> Uniswap V2 **$VETH** price is at *USDC* **${priceVethUsdc}**, *DAI* **${priceVethDai}**, *Ξ* **${priceVethEth}**
+         <:uniswap:718587420274196553> Uniswap V2 **$VETH** price is at *DAI* **${priceVethDai}**, *Ξ* **${priceVethEth}**
        `
 
       //   announceMessage = `<:joint:716869960496054273> No data`
 
-      await message.channel.send(announceMessage);
+      await message.channel.send(announceMessage)
   }
   catch (e) {
-      console.log(e);
+      console.log(e)
   }
 }
 
@@ -74,11 +78,17 @@ client.once('ready', () => {
 });
 
 client.on('message', message => {
-    if (message.content === '!price') {
-        if(message.channel.name === 'trading') {
-           sendPriceToChannel(message);
+
+    if (message.channel.name === 'trading') {
+        switch (message.content) {
+            case '.':
+                sendPriceToChannel(message)
+                break
+            case '!price':
+                sendPriceToChannel(message)
         }
     }
+
 });
 
 client.login(botLoginKey);
