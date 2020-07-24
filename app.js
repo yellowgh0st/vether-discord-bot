@@ -1,13 +1,28 @@
 const Discord = require('discord.js')
 const Web3 = require('web3')
-const UniswapPair = require('./abi/UniswapPair.json')
 const fetch = require('node-fetch')
+const BigNumber = require('bignumber.js')
+
+const UniswapPair = require('./abi/UniswapPair.json')
+const VetherPools = require('./abi/VetherPools.json')
 
 const client = new Discord.Client()
 const botLoginKey = process.env.BOT_LOGIN_KEY
 
 const infuraAPI = 'https://mainnet.infura.io/v3/'
-    + process.env.INFURA_API_KEY
+	+ process.env.INFURA_API_KEY
+
+async function vetherPoolsPrice() {
+	try {
+		const web3_ = new Web3(new Web3.providers.HttpProvider(infuraAPI))
+		const contract = new web3_.eth.Contract(VetherPools.abi, '0xa806Af507d0B05714CD08EAA0039B4A829016099')
+		const price = await contract.methods.calcValueInAsset(new BigNumber(1 * 10 ** 18), '0x0000000000000000000000000000000000000000').call()
+		return Number(Web3.utils.fromWei(price))
+	}
+	catch (e) {
+		console.log(e)
+	}
+}
 
 async function uniswapPrice(pair, swap) {
 	try {
@@ -81,20 +96,37 @@ async function sendPriceToChannel(message, exchange) {
 		resfinexVethUsdt = (resfinexVethUsdt) ? resfinexVethUsdt.toFixed(2) : '<:joint:716869960496054273> No data'
 		console.log(resfinexVethUsdt)
 
-		if(exchange === 'uniswap') {
-			announceMessage = `<:uniswap:718587420274196553> Uniswap V2 **$VETH** price is at *USDC* **${uniswapVethUsdc}**, *DAI* **${uniswapVethDai}**, *Ξ* **${uniswapVethEth}**`
-		}
-		else if(exchange === 'resfinex') {
-			announceMessage = `<:resfinex:728785990675857428> Resfinex **$VETH** price is at *USDT* **${resfinexVethUsdt}**, *Ξ* **${resfinexVethEth}**`
-		}
-		else {
-			announceMessage = `<:uniswap:718587420274196553> Uniswap V2 **$VETH** price is at *USDC* **${uniswapVethUsdc}**, *DAI* **${uniswapVethDai}**, *Ξ* **${uniswapVethEth}**
+		let vetherPoolsVethEth = await vetherPoolsPrice()
+		vetherPoolsVethEth = (vetherPoolsVethEth) ? vetherPoolsVethEth.toFixed(6) : '<:joint:716869960496054273> No data'
+		console.log(vetherPoolsVethEth)
+
+		let vetherPoolsVethUsdc = vetherPoolsVethEth * uniswapEthUsdc
+		vetherPoolsVethUsdc = vetherPoolsVethUsdc.toString()
+		vetherPoolsVethUsdc = vetherPoolsVethUsdc.replace(regExp, '')
+		vetherPoolsVethUsdc = Number(vetherPoolsVethUsdc).toFixed(2)
+		vetherPoolsVethUsdc = (vetherPoolsVethUsdc === null) ? '<:joint:716869960496054273> No data' : vetherPoolsVethUsdc
+		console.log(vetherPoolsVethUsdc)
+
+		let vetherPoolsVethDai = vetherPoolsVethEth * uniswapEthDai
+		vetherPoolsVethDai = vetherPoolsVethDai.toString()
+		vetherPoolsVethDai = vetherPoolsVethDai.replace(regExp, '')
+		vetherPoolsVethDai = Number(vetherPoolsVethDai).toFixed(2)
+		vetherPoolsVethDai = (vetherPoolsVethDai === null) ? '<:joint:716869960496054273> No data' : vetherPoolsVethDai
+		console.log(vetherPoolsVethDai)
+
+		switch (exchange) {
+			case 'vetherpools': announceMessage = `<:vethergold:723655355179204658> Vether Pools **$VETH** price is at *USDC* **${vetherPoolsVethUsdc}**, *DAI* **${vetherPoolsVethDai}**, *Ξ* **${vetherPoolsVethEth}**`; break
+			case 'uniswap': announceMessage = `<:uniswap:718587420274196553> Uniswap V2 **$VETH** price is at *USDC* **${uniswapVethUsdc}**, *DAI* **${uniswapVethDai}**, *Ξ* **${uniswapVethEth}**`; break
+			case 'resfinex': announceMessage = `<:resfinex:728785990675857428> Resfinex **$VETH** price is at *USDT* **${resfinexVethUsdt}**, *Ξ* **${resfinexVethEth}**`; break
+			default: announceMessage = `<:vethergold:723655355179204658> Vether Pools **$VETH** price is at *USDC* **${vetherPoolsVethUsdc}**, *DAI* **${vetherPoolsVethDai}**, *Ξ* **${vetherPoolsVethEth}**
+<:uniswap:718587420274196553> Uniswap V2 **$VETH** price is at *USDC* **${uniswapVethUsdc}**, *DAI* **${uniswapVethDai}**, *Ξ* **${uniswapVethEth}**
 <:resfinex:728785990675857428> Resfinex **$VETH** price is at *USDT* **${resfinexVethUsdt}**, *Ξ* **${resfinexVethEth}**`
 		}
 
 		if(announceMessage) {
 			await message.channel.send(announceMessage)
 		}
+
 	}
 	catch (e) {
 		console.log(e)
@@ -109,17 +141,11 @@ client.on('message', message => {
 
 	if (message.channel.name === 'trading') {
 		switch (message.content) {
-		case '.':
-			sendPriceToChannel(message)
-			break
-		case '!price':
-			sendPriceToChannel(message)
-			break
-		case '!uniswap':
-			sendPriceToChannel(message, 'uniswap')
-			break
-		case '!resfinex':
-			sendPriceToChannel(message, 'resfinex')
+			case '.': sendPriceToChannel(message); break
+			case '!price': sendPriceToChannel(message); break
+			case '!vetherpools': sendPriceToChannel(message, 'vetherpools'); break
+			case '!uniswap': sendPriceToChannel(message, 'uniswap'); break
+			case '!resfinex': sendPriceToChannel(message, 'resfinex')
 		}
 	}
 
