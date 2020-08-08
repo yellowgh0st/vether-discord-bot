@@ -15,7 +15,7 @@ const infuraAPI = 'https://mainnet.infura.io/v3/'
 async function vetherPoolsPrice() {
 	try {
 		const web3_ = new Web3(new Web3.providers.HttpProvider(infuraAPI))
-		const contract = new web3_.eth.Contract(VetherPools.abi, '0xa806Af507d0B05714CD08EAA0039B4A829016099')
+		const contract = new web3_.eth.Contract(VetherPools.abi, '0x52DEcc80d5233d35d3E2dCdC0Ad2ba0373155c45')
 		const price = await contract.methods.calcValueInAsset(new BigNumber(1 * 10 ** 18), '0x0000000000000000000000000000000000000000').call()
 		return Number(Web3.utils.fromWei(price))
 	}
@@ -115,10 +115,10 @@ async function sendPriceToChannel(message, exchange) {
 		console.log(vetherPoolsVethDai)
 
 		switch (exchange) {
-			case 'vetherpools': announceMessage = `<:vethergold:723655355179204658> Vether Pools **$VETH** price is at *USDC* **${vetherPoolsVethUsdc}**, *DAI* **${vetherPoolsVethDai}**, *Ξ* **${vetherPoolsVethEth}**`; break
+			case 'vetherpools': announceMessage = `<:vethergold:723655355179204658> Vether Pools V2 **$VETH** price is at *USDC* **${vetherPoolsVethUsdc}**, *DAI* **${vetherPoolsVethDai}**, *Ξ* **${vetherPoolsVethEth}**`; break
 			case 'uniswap': announceMessage = `<:uniswap:718587420274196553> Uniswap V2 **$VETH** price is at *USDC* **${uniswapVethUsdc}**, *DAI* **${uniswapVethDai}**, *Ξ* **${uniswapVethEth}**`; break
 			case 'resfinex': announceMessage = `<:resfinex:728785990675857428> Resfinex **$VETH** price is at *USDT* **${resfinexVethUsdt}**, *Ξ* **${resfinexVethEth}**`; break
-			default: announceMessage = `<:vethergold:723655355179204658> Vether Pools **$VETH** price is at *USDC* **${vetherPoolsVethUsdc}**, *DAI* **${vetherPoolsVethDai}**, *Ξ* **${vetherPoolsVethEth}**
+			default: announceMessage = `<:vethergold:723655355179204658> Vether Pools V2 **$VETH** price is at *USDC* **${vetherPoolsVethUsdc}**, *DAI* **${vetherPoolsVethDai}**, *Ξ* **${vetherPoolsVethEth}**
 <:uniswap:718587420274196553> Uniswap V2 **$VETH** price is at *USDC* **${uniswapVethUsdc}**, *DAI* **${uniswapVethDai}**, *Ξ* **${uniswapVethEth}**
 <:resfinex:728785990675857428> Resfinex **$VETH** price is at *USDT* **${resfinexVethUsdt}**, *Ξ* **${resfinexVethEth}**`
 		}
