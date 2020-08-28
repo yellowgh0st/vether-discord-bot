@@ -53,7 +53,7 @@ async function resfinexPrice(market) {
 	}
 }
 
-async function sendPriceToChannel(message, exchange) {
+async function sendPriceToChannel(message, exchange, pump) {
 	try {
 		const regExp = /e-(\d+)/
 		let announceMessage
@@ -96,7 +96,13 @@ async function sendPriceToChannel(message, exchange) {
 		resfinexVethUsdt = (resfinexVethUsdt) ? resfinexVethUsdt.toFixed(2) : '<:joint:716869960496054273> No data'
 		console.log(resfinexVethUsdt)
 
-		let vetherPoolsVethEth = await vetherPoolsPrice()
+		let vetherPoolsVethEth
+		if (pump) {
+			vetherPoolsVethEth = pump
+		}
+		else {
+			vetherPoolsVethEth = await vetherPoolsPrice()
+		}
 		vetherPoolsVethEth = (vetherPoolsVethEth) ? vetherPoolsVethEth.toFixed(6) : '<:joint:716869960496054273> No data'
 		console.log(vetherPoolsVethEth)
 
@@ -138,6 +144,14 @@ client.once('ready', () => {
 })
 
 client.on('message', message => {
+
+	if(message.content.startsWith('!pump')) {
+		const args = message.content.slice('!pump'.length).trim().split(' ')
+		const number = Number(args.shift())
+		if (typeof number === 'number') {
+			sendPriceToChannel(message, undefined, number)
+		}
+	}
 
 	if (message.channel.name === 'trading') {
 		switch (message.content) {
