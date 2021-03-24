@@ -26,18 +26,6 @@ async function impliedValue() {
 	}
 }
 
-async function vaderswapPrice() {
-	try {
-		const oneBN = String(new BigNumber(10 ** 18))
-		const web3 = new Web3(new Web3.providers.HttpProvider(infuraAPI))
-		const vaderUtils = new web3.eth.Contract(VaderUtils.abi, '0x0f216323076dfe029f01B3DeB3bC1682B1ea8A37')
-		return await vaderUtils.methods.calcValueInToken('0x0000000000000000000000000000000000000000', oneBN).call()
-	}
-	catch (e) {
-		console.log(e)
-	}
-}
-
 async function uniswapPrice(pair, swap) {
 	try {
 		const web3 = new Web3(new Web3.providers.HttpProvider(infuraAPI))
@@ -122,31 +110,11 @@ async function sendPriceToChannel(message, exchange, pump) {
 		vetherImpliedValueDai = vetherImpliedValueDai ? Number(vetherImpliedValueDai).toFixed(2) : '<:joint:716869960496054273> No data'
 		console.log(vetherImpliedValueDai)
 
-		let vaderswapVethEth
-		if (pump) {
-			vaderswapVethEth = pump
-		}
-		else {
-			vaderswapVethEth = Web3.utils.fromWei(await vaderswapPrice())
-		}
-		vaderswapVethEth = (vaderswapVethEth) ? Number(vaderswapVethEth).toFixed(5) : '<:joint:716869960496054273> No data'
-		console.log(vaderswapVethEth)
-
-		let vaderswapVethUsdc = String(vaderswapVethEth * uniswapEthUsdc).replace(regExp, '')
-		vaderswapVethUsdc = vaderswapVethUsdc ? Number(vaderswapVethUsdc).toFixed(2) : '<:joint:716869960496054273> No data'
-		console.log(vaderswapVethUsdc)
-
-		let vaderswapVethDai = String(vaderswapVethEth * uniswapEthDai).replace(regExp, '')
-		vaderswapVethDai = vaderswapVethDai ? Number(vaderswapVethDai).toFixed(2) : '<:joint:716869960496054273> No data'
-		console.log(vaderswapVethDai)
-
 		switch (exchange) {
 			case 'impliedval': announceMessage = `<:starexplosion:723661462072983724> Implied Value of **$VETH** is at *USDC* **${vetherImpliedValueUsdc}**, *DAI* **${vetherImpliedValueDai}**, *Ξ* **${vetherImpliedValue}**`; break
-			case 'vetherpools': announceMessage = `<:vethergold:723655355179204658> Vether Pools V3 **$VETH** price is at *USDC* **${vaderswapVethUsdc}**, *DAI* **${vaderswapVethDai}**, *Ξ* **${vaderswapVethEth}**`; break
 			case 'uniswap': announceMessage = `<:uniswap:718587420274196553> Uniswap V2 **$VETH** price is at *USDC* **${uniswapVethUsdc}**, *DAI* **${uniswapVethDai}**, *Ξ* **${uniswapVethEth}**`; break
 			case 'resfinex': announceMessage = `<:resfinex:728785990675857428> Resfinex **$VETH** price is at *USDT* **${resfinexVethUsdt}**, *Ξ* **${resfinexVethEth}**`; break
 			default: announceMessage = `<:starexplosion:723661462072983724> Implied Value of **$VETH** is at *USDC* **${vetherImpliedValueUsdc}**, *DAI* **${vetherImpliedValueDai}**, *Ξ* **${vetherImpliedValue}**
-<:vethergold:723655355179204658> Vether Pools V3 **$VETH** price is at *USDC* **${vaderswapVethUsdc}**, *DAI* **${vaderswapVethDai}**, *Ξ* **${vaderswapVethEth}**
 <:uniswap:718587420274196553> Uniswap V2 **$VETH** price is at *USDC* **${uniswapVethUsdc}**, *DAI* **${uniswapVethDai}**, *Ξ* **${uniswapVethEth}**
 <:resfinex:728785990675857428> Resfinex **$VETH** price is at *USDT* **${resfinexVethUsdt}**, *Ξ* **${resfinexVethEth}**`
 		}
@@ -180,7 +148,6 @@ client.on('message', message => {
 			case '.': sendPriceToChannel(message); break
 			case '!price': sendPriceToChannel(message); break
 			case '!impliedval': sendPriceToChannel(message, 'impliedval'); break
-			case '!vetherpools': sendPriceToChannel(message, 'vetherpools'); break
 			case '!uniswap': sendPriceToChannel(message, 'uniswap'); break
 			case '!resfinex': sendPriceToChannel(message, 'resfinex')
 		}
