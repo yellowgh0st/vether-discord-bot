@@ -1,10 +1,7 @@
 const Discord = require('discord.js')
 const Web3 = require('web3')
-const fetch = require('node-fetch')
-const BigNumber = require('bignumber.js')
 
 const Vether = require('./abi/Vether.json')
-const VaderUtils = require('./abi/VaderUtils.json')
 const UniswapPair = require('./abi/UniswapPair.json')
 
 const client = new Discord.Client()
@@ -43,19 +40,8 @@ async function uniswapPrice(pair, swap) {
 	}
 }
 
-async function resfinexPrice(market) {
-	try {
-		const response = await fetch('https://api.resfinex.com/engine/history?pair=' + market)
-		const resfinex = await response.json()
-		const last = resfinex.data.pop()
-		return last.price
-	}
-	catch (e) {
-		console.log(e)
-	}
-}
 
-async function sendPriceToChannel(message, exchange, pump) {
+async function sendPriceToChannel(message, exchange) {
 	try {
 		const regExp = /e-(\d+)/
 		let announceMessage
@@ -86,18 +72,6 @@ async function sendPriceToChannel(message, exchange, pump) {
 		uniswapVethUsdc = uniswapVethUsdc ? uniswapVethUsdc : '<:joint:716869960496054273> No data'
 		console.log(uniswapVethUsdc)
 
-		let resfinexVethEth = await resfinexPrice('VETH_ETH')
-		resfinexVethEth = (resfinexVethEth) ? resfinexVethEth.toFixed(5) : '<:joint:716869960496054273> No data'
-		console.log(resfinexVethEth)
-
-		let resfinexEthUsdt = await resfinexPrice('ETH_USDT')
-		resfinexEthUsdt = (resfinexEthUsdt) ? resfinexEthUsdt.toFixed(2) : '<:joint:716869960496054273> No data'
-		console.log(resfinexEthUsdt)
-
-		let resfinexVethUsdt = resfinexVethEth * resfinexEthUsdt
-		resfinexVethUsdt = (resfinexVethUsdt) ? resfinexVethUsdt.toFixed(2) : '<:joint:716869960496054273> No data'
-		console.log(resfinexVethUsdt)
-
 		let vetherImpliedValue = await impliedValue()
 		vetherImpliedValue = (vetherImpliedValue) ? vetherImpliedValue.toFixed(5) : '<:joint:716869960496054273> No data'
 		console.log(vetherImpliedValue)
@@ -111,12 +85,10 @@ async function sendPriceToChannel(message, exchange, pump) {
 		console.log(vetherImpliedValueDai)
 
 		switch (exchange) {
-			case 'impliedval': announceMessage = `<:starexplosion:723661462072983724> Implied Value of **$VETH** is at *USDC* **${vetherImpliedValueUsdc}**, *DAI* **${vetherImpliedValueDai}**, *Ξ* **${vetherImpliedValue}**`; break
+			case 'implied': announceMessage = `<:starexplosion:723661462072983724> Implied Value of **$VETH** is at *USDC* **${vetherImpliedValueUsdc}**, *DAI* **${vetherImpliedValueDai}**, *Ξ* **${vetherImpliedValue}**`; break
 			case 'uniswap': announceMessage = `<:uniswap:718587420274196553> Uniswap V2 **$VETH** price is at *USDC* **${uniswapVethUsdc}**, *DAI* **${uniswapVethDai}**, *Ξ* **${uniswapVethEth}**`; break
-			case 'resfinex': announceMessage = `<:resfinex:728785990675857428> Resfinex **$VETH** price is at *USDT* **${resfinexVethUsdt}**, *Ξ* **${resfinexVethEth}**`; break
 			default: announceMessage = `<:starexplosion:723661462072983724> Implied Value of **$VETH** is at *USDC* **${vetherImpliedValueUsdc}**, *DAI* **${vetherImpliedValueDai}**, *Ξ* **${vetherImpliedValue}**
-<:uniswap:718587420274196553> Uniswap V2 **$VETH** price is at *USDC* **${uniswapVethUsdc}**, *DAI* **${uniswapVethDai}**, *Ξ* **${uniswapVethEth}**
-<:resfinex:728785990675857428> Resfinex **$VETH** price is at *USDT* **${resfinexVethUsdt}**, *Ξ* **${resfinexVethEth}**`
+<:uniswap:718587420274196553> Uniswap V2 **$VETH** price is at *USDC* **${uniswapVethUsdc}**, *DAI* **${uniswapVethDai}**, *Ξ* **${uniswapVethEth}**`
 		}
 
 		if(announceMessage) {
@@ -135,19 +107,11 @@ client.once('ready', () => {
 
 client.on('message', message => {
 
-	if(message.content.startsWith('!pump')) {
-		const args = message.content.slice('!pump'.length).trim().split(' ')
-		const number = Number(args.shift())
-		if (typeof number === 'number') {
-			sendPriceToChannel(message, undefined, number)
-		}
-	}
-
 	if (message.channel.name === 'trading') {
 		switch (message.content) {
 			case '.': sendPriceToChannel(message); break
 			case '!price': sendPriceToChannel(message); break
-			case '!impliedval': sendPriceToChannel(message, 'impliedval'); break
+			case '!implied': sendPriceToChannel(message, 'implied'); break
 			case '!uniswap': sendPriceToChannel(message, 'uniswap'); break
 			case '!resfinex': sendPriceToChannel(message, 'resfinex')
 		}
